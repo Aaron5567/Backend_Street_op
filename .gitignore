@@ -1,5 +1,5 @@
 /node_modules
-.env
+
 mysql_data/
 .DS_Store
 app/controllers/path/to/serviceAccountKey.json
