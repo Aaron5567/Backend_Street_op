@@ -1,6 +1,6 @@
 // Configuración de producción con PostgreSQL (Supabase Database)
 module.exports = {
-    PORT: 3002,
+    PORT: 3007,
     DB_HOST: process.env.DB_HOST || 'aws-1-us-east-1.pooler.supabase.com',
     DB_PORT: process.env.DB_PORT || 5432,
     DB_NAME: process.env.DB_NAME || 'postgres',
