@@ -14,7 +14,7 @@ app.use(bodyParser.json());
 
 app.use(bodyParser.urlencoded({ extended: true }));
 
-app.use('/stree/api', require('../app/router/auth'));
+app.use('/streev1/api', require('../app/router/auth'));
 
 //  const PORT = process.env.PORT ;
 // console.log(process.env.NODE_ENV);
