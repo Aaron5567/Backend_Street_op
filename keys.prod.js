@@ -15,5 +15,5 @@ module.exports = {
     passdb: 'familia1991',
     dba: 'garita',
     host: '143.110.237.200',
-    url: 'https://a3syscom.com/stree/api'
+    url: 'https://a3syscom.com/streev1/api'
 };
