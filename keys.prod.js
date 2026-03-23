@@ -10,7 +10,7 @@
 // };
 
 module.exports = {
-    PORT: 3002,
+    PORT: 3007,
     usuariodb: 'aalba',
     passdb: 'familia1991',
     dba: 'garita',
