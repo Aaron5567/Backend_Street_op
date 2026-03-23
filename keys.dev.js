@@ -1,11 +1,22 @@
-// Configuración de desarrollo con PostgreSQL (Supabase Database)
+// // Configuración de desarrollo con PostgreSQL (Supabase Database)
+// module.exports = {
+//     PORT: 3007,
+//     // PORT: 3002,
+//     DB_HOST: process.env.DB_HOST || 'aws-1-us-east-1.pooler.supabase.com',
+//     DB_PORT: process.env.DB_PORT || 5432,
+//     DB_NAME: process.env.DB_NAME || 'postgres',
+//     DB_USER: process.env.DB_USER || 'postgres.erkleeiyaokrqlntwply',
+//     DB_PASSWORD: process.env.DB_PASSWORD || 'qttX89r0HCW7u2vl',
+//     // DB_PASSWORD: 'qttX89r0HCW7u2vl' || 'qttX89r0HCW7u2vl',
+//     url: 'localhost:3007/streev1/api'
+// };
+
+
 module.exports = {
-    PORT: 3007,
-    DB_HOST: process.env.DB_HOST || 'aws-1-us-east-1.pooler.supabase.com',
-    DB_PORT: process.env.DB_PORT || 5432,
-    DB_NAME: process.env.DB_NAME || 'postgres',
-    DB_USER: process.env.DB_USER || 'postgres.erkleeiyaokrqlntwply',
-    DB_PASSWORD: process.env.DB_PASSWORD || 'qttX89r0HCW7u2vl',
-    // DB_PASSWORD: 'qttX89r0HCW7u2vl' || 'qttX89r0HCW7u2vl',
-    url: 'localhost:3002/stree/api'
+    PORT: 3002,
+    usuariodb: 'root',
+    passdb: 'root',
+    dba: 'garita',
+    host: '127.0.0.1',
+    url: 'http://localhost:3002/streev1/api'
 };

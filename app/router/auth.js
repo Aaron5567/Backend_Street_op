@@ -202,4 +202,6 @@ router.post('/sendpush' , sendpush);
 router.post('/bkgraficamensualgasto', validarJWT ,bkgraficamensualgasto ); // ok mostrar grafica mensual de gasto por zona
 router.post('/bkgraficanualgasto',validarJWT , bkgraficanualgasto ); // ok mostrar grafica anual de gasto por zona
 router.post('/bkgrafporcpago',validarJWT , bkgrafporcpago ); // ok mostrar grafica anual de porcentaje de pago por zona y casa
+
+
 module.exports = router;

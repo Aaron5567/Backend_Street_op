@@ -1,6 +1,6 @@
 
 const { response } = require('express');
-const db = require('../config/connection');
+const { dbQuery } = require('../helpers/mysql-utils');
 
 const bkperfil = async (req, res = response) => {
     const idFromRequest = req.body.id;
@@ -32,22 +32,22 @@ console.log('idFromRequest:', idFromRequest);
     }
 
     try {
-        const result = await db.query(
+        const result = await dbQuery(
             `SELECT id, nombre, apellido, correo, telefono, casa, roll
              FROM usuario
-             WHERE id = $1 AND usuario = $2
+             WHERE id = ? AND usuario = ?
              LIMIT 1`,
             [userId, tokenUser]
         );
 
-        if (!result.rows || result.rows.length === 0) {
+        if (!result || result.length === 0) {
             return res.status(403).json({
                 ok: false,
                 msg: 'El id no corresponde al usuario del token'
             });
         }
 
-        const perfil = result.rows[0];
+        const perfil = result[0];
 
         return res.json({
             ok: true,

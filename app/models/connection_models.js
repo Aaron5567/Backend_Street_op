@@ -1,5 +1,5 @@
 const dbConfig = require("../config/conex");
-const mysql = require("mysql");
+const mysql = require("mysql2");
 
 
 var connection = mysql.createPool({

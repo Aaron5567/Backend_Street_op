@@ -1,21 +1,22 @@
 
 const { response } = require('express');
 const jwt = require('jsonwebtoken');
+const { promisify } = require('util');
 const { generarJWT } = require('../helpers/jwt');
 const { metodousuarioVerificado } = require('../controllers/mail');
-const db = require('../config/connection');
+const sql = require('../models/connection_models');
 //const Usuario =require('../models/usuario');
 //const casamodel =require('../models/casa');
 
-/*var odbc = require('odbc');
- const  connectionString   = require('../config/odbc');
- */
+const dbQuery = promisify(sql.query).bind(sql);
 
 const bklogin = async (req, res = response) => {
   let body = req.body;
   let user = body.usuario;
   let pass = body.pass;
   let userdata = [];
+
+  console.log('BKLOGIN - Usuario recibido:', user);
 
   try {
     if (!user || !pass) {
@@ -25,8 +26,7 @@ const bklogin = async (req, res = response) => {
       });
     }
 
-    // Query con pg pool usando parámetros ($1, $2, etc.)
-    const result = await db.query(`
+    const dbUser = await dbQuery(`
       SELECT a.id, a.roll, a.idcodcalle, a.casa, a.nombre, a.apellido,
              a.correo, a.telefono, a.usuario, a.pass, b.casa as casa_nombre, 
              b.id as idcasa, c.nombrecalle, c.sector, c.barriada, a.status, 
@@ -34,11 +34,9 @@ const bklogin = async (req, res = response) => {
       FROM usuario a
       LEFT JOIN casa b ON a.casa = b.id
       LEFT JOIN calle c ON a.idcodcalle = c.idcodcalle
-      WHERE a.usuario = $1
+      WHERE a.usuario = ?
       LIMIT 1
     `, [user]);
-
-    const dbUser = result.rows;
 
     if (!dbUser || dbUser.length === 0) {
       return res.status(400).json({
@@ -126,8 +124,7 @@ const renewToken = async (req, res = response) => {
   let userdata = [];
 
   try {
-    // Query con pg pool usando parámetros
-    const result = await db.query(`
+    const dbUser = await dbQuery(`
       SELECT a.id, a.roll, a.idcodcalle, a.casa, a.nombre, a.apellido,
              a.correo, a.telefono, a.usuario, a.pass, b.casa as casa_nombre, 
              b.id as idcasa, c.nombrecalle, c.sector, c.barriada, a.status, 
@@ -135,10 +132,8 @@ const renewToken = async (req, res = response) => {
       FROM usuario a
       LEFT JOIN casa b ON a.casa = b.id
       LEFT JOIN calle c ON a.idcodcalle = c.idcodcalle
-      WHERE a.usuario = $1 AND a.pass = $2
+      WHERE a.usuario = ? AND a.pass = ?
     `, [user, pass]);
-
-    const dbUser = result.rows;
 
     if (!dbUser || dbUser.length === 0) {
       return res.status(400).json({
@@ -212,17 +207,17 @@ const bkAdminPhAccess = async (req, res = response) => {
   }
 
   try {
-    const result = await db.query(
+    const PhAccessDB = await dbQuery(
       `select a.idcalle, c.barriada From admin_php_access a 
       left join calle c on c.idcodcalle = a.idcalle 
-       WHERE iduser = $1
+       WHERE iduser = ?
        ORDER BY a.idcalle ASC`,
       [Number(iduser)]
     );
 
     return res.json({
       ok: true,
-      PhAccessDB: result.rows
+      PhAccessDB
     });
   } catch (error) {
     console.log('ERROR EN BKADMINPHACCESS:', error);
