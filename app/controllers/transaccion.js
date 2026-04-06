@@ -1,5 +1,6 @@
 const { response } = require('express');
 const { dbQuery, isAdminRole } = require('../helpers/mysql-utils');
+const { processMonthlyCharges } = require('../services/monthly-charges');
 
 const ensureAdmin = (req, res) => {
   const tokenRole = req.auth?.role;
@@ -557,6 +558,55 @@ const bkhistoricotranspagosGENERAL = async (req, res = response) => {
   }
 };
 
+const bkprocesarcargomensual = async (req, res = response) => {
+  const auth = ensureAdmin(req, res);
+  if (!auth) {
+    return;
+  }
+
+  const zona = req.body?.zona;
+  const fecha = req.body?.fecha;
+  const requestedAdminId = req.body?.idadmin;
+  const idadmin = requestedAdminId !== undefined && requestedAdminId !== null && requestedAdminId !== ''
+    ? Number(requestedAdminId)
+    : Number(auth.tokenUserId);
+
+  if (!Number.isInteger(idadmin) || idadmin <= 0) {
+    return res.status(400).json({
+      ok: false,
+      msg: 'El idadmin es obligatorio y debe ser válido'
+    });
+  }
+
+  if (Number(idadmin) !== Number(auth.tokenUserId)) {
+    return res.status(403).json({
+      ok: false,
+      msg: 'El idadmin no coincide con el usuario autenticado'
+    });
+  }
+
+  try {
+    const result = await processMonthlyCharges({
+      targetDate: fecha,
+      zona,
+      adminId: idadmin
+    });
+
+    return res.json({
+      ok: true,
+      msg: 'Proceso mensual ejecutado correctamente',
+      cronMensualDB: result
+    });
+  } catch (error) {
+    console.log('ERROR EN BKPROCESARCARGOMENSUAL:', error);
+    return res.status(500).json({
+      ok: false,
+      msg: 'Error al ejecutar el cargo mensual',
+      error: error.message
+    });
+  }
+};
+
 module.exports = {
   bkhistoricotranspagosGENERAL,
   bkfiltropago,
@@ -568,5 +618,6 @@ module.exports = {
   bktransaldo,
   bktransaldousuario,
   bktranvalidacionanualidad,
-  bktranallhomme
+  bktranallhomme,
+  bkprocesarcargomensual
 };

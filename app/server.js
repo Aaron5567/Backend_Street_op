@@ -7,6 +7,7 @@ const path = require('path');
 require('dotenv').config();
 const app = express();
 const config = require('./config/config.js');
+const { startMonthlyChargesJob } = require('./jobs/monthly-charges');
 // CORS
 app.use(cors());
 
@@ -27,4 +28,5 @@ app.use('/streev1/api', require('../app/router/auth'));
     console.log(`Server is running on port ${process.env.NODE_ENV} -  ${config.PORT}.`);
   });
 
+startMonthlyChargesJob();
 

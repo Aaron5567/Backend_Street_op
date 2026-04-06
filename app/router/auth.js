@@ -54,7 +54,8 @@ const {
     bkcodtransgasto,
     bktranallhomme,
     bkfiltropago,
-    bkhistoricotranspagosGENERAL
+    bkhistoricotranspagosGENERAL,
+    bkprocesarcargomensual
 } = require('../controllers/transaccion');
 
 const {bkgraficamensualgasto,
@@ -119,6 +120,9 @@ router.post('/bkfiltropago'                     , validarJWT   , bkfiltropago);/
 router.post('/bktranvalidacionanualidad'        , validarJWT ,bktranvalidacionanualidad);
 router.post('/bkinsertransanualidad'            , validarJWT  ,bkinsertransanualidad);
 router.post('/bkhistoricotranspagosGENERAL'     , validarJWT, bkhistoricotranspagosGENERAL);
+
+
+router.post('/bkprocesarcargomensual'           , validarJWT, bkprocesarcargomensual);
 
 
 
