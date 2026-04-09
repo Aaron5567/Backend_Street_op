@@ -48,6 +48,7 @@ const {
     bkinsertranscuota,
     bkhistoricotranspagos,
     bktransaldo,
+    bkresumensaldocasa,
     bktransaldousuario,
     bktranvalidacionanualidad,
     bkcodtrans,
@@ -108,6 +109,7 @@ router.post('/bkSEARCHUSUARIO',validarJWT, bkSEARCHUSUARIO);
 router.get('/bkcodtrans'                        , validarJWT, bkcodtrans); // ok visualizar codigo transaccion
 router.post('/bkinsertranscuota'                ,  validarJWT,    bkinsertranscuota); //ok registra tranacciones 
 router.post('/bktransaldo'                      , validarJWT   , bktransaldo); // ok envio de saldo al usuario
+router.post('/bkresumensaldocasa'               , validarJWT   , bkresumensaldocasa); // resumen de saldo, saldo anterior y ultima fecha de pago por casa
 router.post('/bktransaldousuario'               , validarJWT   , bktransaldousuario); // saldo para usuario autenticado
 router.get('/bkcodtransgasto'                  , validarJWT, bkcodtransgasto); // oko visualizar codigo transaccion gasto
 router.post('/bktranallhomme'                   , validarJWT , bktranallhomme);  //ok mostrar todas las transacciones de todas las casas

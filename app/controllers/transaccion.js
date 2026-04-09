@@ -320,6 +320,74 @@ const bktransaldo = async (req, res = response) => {
   }
 };
 
+const bkresumensaldocasa = async (req, res = response) => {
+  const zona = req.body?.zona;
+  const idcasa = req.body?.idcasa;
+  const auth = ensureAdmin(req, res);
+  if (!auth) {
+    return;
+  }
+
+  if (zona === undefined || zona === null || zona === '') {
+    return res.status(400).json({
+      ok: false,
+      msg: 'El campo zona es obligatorio'
+    });
+  }
+
+  if (idcasa === undefined || idcasa === null || idcasa === '') {
+    return res.status(400).json({
+      ok: false,
+      msg: 'El campo idcasa es obligatorio'
+    });
+  }
+
+  try {
+    const result = await dbQuery(
+      `WITH movimientos AS (
+         SELECT a.idcasa,
+                a.zona,
+                date(a.fecha) AS fecha,
+                a.monto,
+                b.saldo,
+                (a.monto * b.saldo) AS valor,
+                ROW_NUMBER() OVER (
+                  PARTITION BY a.idcasa, a.zona
+                  ORDER BY a.fecha DESC, a.id DESC
+                ) AS rn
+         FROM transaccion a
+         LEFT JOIN codtrans b ON b.id = a.codtrans
+         WHERE a.zona = ?
+           AND a.idcasa = ?
+       )
+       SELECT c.casa,
+              ca.nombrecalle AS calle,
+              ca.sector,
+              ca.barriada,
+              COALESCE(SUM(m.valor), 0) AS saldo_actual,
+              COALESCE(SUM(CASE WHEN m.rn > 1 THEN m.valor ELSE 0 END), 0) AS saldo_anterior,
+              MAX(CASE WHEN m.rn = 1 THEN m.fecha END) AS ultima_fecha_pago
+       FROM movimientos m
+       LEFT JOIN casa c ON c.id = m.idcasa
+       LEFT JOIN calle ca ON ca.idcodcalle = m.zona
+       GROUP BY c.casa, calle, ca.sector, ca.barriada`,
+      [zona, Number(idcasa)]
+    );
+
+    return res.json({
+      ok: true,
+      ResumenSaldoCasaDB: result
+    });
+  } catch (error) {
+    console.log('ERROR EN BKRESUMENSALDOCASA:', error);
+    return res.status(500).json({
+      ok: false,
+      msg: 'Hable con el administrador..',
+      error: error.message
+    });
+  }
+};
+
 const bktransaldousuario = async (req, res = response) => {
   const tokenUserId = req.auth?.id;
   const tokenUser = req.auth?.user;
@@ -616,6 +684,7 @@ module.exports = {
   bkinsertranscuota,
   bkhistoricotranspagos,
   bktransaldo,
+  bkresumensaldocasa,
   bktransaldousuario,
   bktranvalidacionanualidad,
   bktranallhomme,
