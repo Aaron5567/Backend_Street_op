@@ -355,7 +355,11 @@ const bkresumensaldocasa = async (req, res = response) => {
                 ROW_NUMBER() OVER (
                   PARTITION BY a.idcasa, a.zona
                   ORDER BY a.fecha DESC, a.id DESC
-                ) AS rn
+                ) AS rn,
+                ROW_NUMBER() OVER (
+                  PARTITION BY a.idcasa, a.zona, a.codtrans
+                  ORDER BY a.fecha DESC, a.id DESC
+                ) AS rn_tipo
          FROM transaccion a
          LEFT JOIN codtrans b ON b.id = a.codtrans
          WHERE a.zona = ?
@@ -368,8 +372,8 @@ const bkresumensaldocasa = async (req, res = response) => {
               COALESCE(SUM(m.valor), 0) AS saldo_actual,
               COALESCE(SUM(CASE WHEN m.rn > 1 THEN m.valor ELSE 0 END), 0) AS saldo_anterior,
               MAX(CASE WHEN m.saldo = -1 THEN m.fecha END) AS ultima_fecha_pago,
-              MAX(CASE WHEN m.codtrans = 2 THEN m.fecha END) AS ultima_fecha_cargo,
-              MAX(CASE WHEN m.codtrans = 2 THEN m.monto END) AS monto_ultimo_cargo
+              MAX(CASE WHEN m.codtrans = 2 AND m.rn_tipo = 1 THEN m.fecha END) AS ultima_fecha_cargo,
+              MAX(CASE WHEN m.codtrans = 2 AND m.rn_tipo = 1 THEN m.monto END) AS monto_ultimo_cargo
        FROM movimientos m
        LEFT JOIN casa c ON c.id = m.idcasa
        LEFT JOIN calle ca ON ca.idcodcalle = m.zona
