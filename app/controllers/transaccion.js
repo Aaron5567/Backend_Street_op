@@ -345,39 +345,74 @@ const bkresumensaldocasa = async (req, res = response) => {
   try {
     const result = await dbQuery(
       `WITH movimientos AS (
-         SELECT a.idcasa,
-                a.zona,
-                date(a.fecha) AS fecha,
-                a.monto,
-                b.saldo,
-                (a.monto * b.saldo) AS valor,
-                a.codtrans,
-                ROW_NUMBER() OVER (
-                  PARTITION BY a.idcasa, a.zona
-                  ORDER BY a.fecha DESC, a.id DESC
-                ) AS rn,
-                ROW_NUMBER() OVER (
-                  PARTITION BY a.idcasa, a.zona, a.codtrans
-                  ORDER BY a.fecha DESC, a.id DESC
-                ) AS rn_tipo
-         FROM transaccion a
-         LEFT JOIN codtrans b ON b.id = a.codtrans
-         WHERE a.zona = ?
-           AND a.idcasa = ?
-       )
-       SELECT c.casa,
-              ca.nombrecalle AS calle,
-              ca.sector,
-              ca.barriada,
-              COALESCE(SUM(m.valor), 0) AS saldo_actual,
-              COALESCE(SUM(CASE WHEN m.rn > 1 THEN m.valor ELSE 0 END), 0) AS saldo_anterior,
-              MAX(CASE WHEN m.saldo = -1 THEN m.fecha END) AS ultima_fecha_pago,
-              MAX(CASE WHEN m.codtrans = 2 AND m.rn_tipo = 1 THEN m.fecha END) AS ultima_fecha_cargo,
-              MAX(CASE WHEN m.codtrans = 2 AND m.rn_tipo = 1 THEN m.monto END) AS monto_ultimo_cargo
-       FROM movimientos m
-       LEFT JOIN casa c ON c.id = m.idcasa
-       LEFT JOIN calle ca ON ca.idcodcalle = m.zona
-       GROUP BY c.casa, calle, ca.sector, ca.barriada`,
+  SELECT 
+    a.idcasa,
+    a.zona,
+    DATE(a.fecha) AS fecha,
+    a.monto,
+    b.saldo,
+    (a.monto * b.saldo) AS valor,
+    a.codtrans,
+
+    ROW_NUMBER() OVER (
+      PARTITION BY a.idcasa, a.zona
+      ORDER BY a.fecha DESC, a.id DESC
+    ) AS rn,
+
+    ROW_NUMBER() OVER (
+      PARTITION BY a.idcasa, a.zona, a.codtrans
+      ORDER BY a.fecha DESC, a.id DESC
+    ) AS rn_tipo,
+
+    ROW_NUMBER() OVER (
+      PARTITION BY a.idcasa, a.zona, b.saldo
+      ORDER BY a.fecha DESC, a.id DESC
+    ) AS rn_saldo
+
+  FROM transaccion a
+  LEFT JOIN codtrans b ON b.id = a.codtrans
+  WHERE a.zona = ?
+    AND a.idcasa = ?
+)
+SELECT 
+  c.casa,
+  ca.nombrecalle AS calle,
+  ca.sector,
+  ca.barriada,
+
+  COALESCE(SUM(m.valor), 0) AS saldo_actual,
+
+  COALESCE(SUM(CASE 
+    WHEN m.rn > 1 THEN m.valor 
+    ELSE 0 
+  END), 0) AS saldo_anterior,
+
+  MAX(CASE 
+    WHEN m.saldo = -1 THEN m.fecha 
+  END) AS ultima_fecha_pago,
+
+  MAX(CASE 
+    WHEN m.saldo = -1 AND m.rn_saldo = 1 THEN m.monto 
+  END) AS monto_ultimo_pago,
+
+  MAX(CASE 
+    WHEN m.codtrans = 2 AND m.rn_tipo = 1 THEN m.fecha 
+  END) AS ultima_fecha_cargo,
+
+  MAX(CASE 
+    WHEN m.codtrans = 2 AND m.rn_tipo = 1 THEN m.monto 
+  END) AS monto_ultimo_cargo
+
+FROM movimientos m
+LEFT JOIN casa c ON c.id = m.idcasa
+LEFT JOIN calle ca ON ca.idcodcalle = m.zona
+GROUP BY 
+  c.casa, 
+  ca.nombrecalle, 
+  ca.sector, 
+  ca.barriada`,
+
+
       [zona, Number(idcasa)]
     );
 
